@@ -38,6 +38,14 @@ python gui_admin_app.py
 
 它会自动启动小和本地工作台，并在浏览器里打开一个本地控制台页面。第一次使用时，直接在控制台里填好 GitHub 私有仓库信息即可；之后后台会自动拉取提交、回写审核。
 
+小和端 macOS 特别版：
+
+```bash
+python scripts/build_xiaohe_macos_bundle.py
+```
+
+这个脚本会在 `release/` 里生成一个 `MathQuestXiaohe.app` 发布目录和对应 zip。这个 Mac 版本不依赖 Tk，也不需要小和手动改配置文件；她双击应用后，依然会进入同一套本地控制台和工作台。注意：这个特别版需要在 Mac 本机安装 `Python 3.10` 或更新版本。
+
 ## GitHub 同步
 
 如果不想正式部署共享后端，可以先用一个**私有 GitHub 仓库**做分钟级同步中转。
@@ -123,4 +131,6 @@ python -m unittest tests.test_server
 - `desktop_runtime.py`: 桌面端公用运行时和定时同步辅助逻辑
 - `github_sync_client.py`: 用户端 GitHub 同步脚本，负责推状态/提交、拉审核
 - `github_sync_server.py`: 小和端 GitHub 同步脚本，负责拉提交、回写审核
+- `scripts/build_xiaohe_macos_bundle.py`: 构建小和端 macOS 特别版发布包
+- `macos/MathQuestXiaohe.app/`: 小和端 macOS 应用模板
 - `tests/test_server.py`: 后端接口测试

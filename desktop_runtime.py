@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import sys
 import threading
 import time
@@ -15,10 +16,11 @@ def resource_root() -> Path:
     return Path(__file__).resolve().parent
 
 
-def app_data_root(name: str) -> Path:
+def app_data_base_candidates(platform_name: str | None = None, home: Path | None = None) -> list[Path]:
+    platform_name = platform_name or sys.platform
+    home = home or Path.home()
     candidates: list[Path] = []
-    home = Path.home()
-    if sys.platform.startswith("win"):
+    if platform_name.startswith("win"):
         candidates.extend(
             [
                 Path(os.getenv("LOCALAPPDATA") or ""),
@@ -26,9 +28,21 @@ def app_data_root(name: str) -> Path:
                 home,
             ]
         )
+    elif platform_name == "darwin":
+        candidates.extend(
+            [
+                home / "Library" / "Application Support",
+                home,
+            ]
+        )
     else:
         candidates.extend([home / ".local" / "share", home])
     candidates.append(resource_root())
+    return candidates
+
+
+def app_data_root(name: str) -> Path:
+    candidates = app_data_base_candidates()
 
     last_error: Exception | None = None
     for base in candidates:
@@ -63,8 +77,13 @@ def open_external(target: str | Path) -> None:
         path = target.resolve()
         if sys.platform.startswith("win"):
             os.startfile(str(path))
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
             webbrowser.open(path.as_uri())
+        return
+    if sys.platform == "darwin":
+        subprocess.Popen(["open", str(target)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return
     webbrowser.open(str(target))
 

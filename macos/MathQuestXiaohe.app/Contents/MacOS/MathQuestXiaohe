@@ -1,0 +1,37 @@
+#!/bin/sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+APP_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../Resources/app" && pwd)
+
+pick_python() {
+    if command -v python3 >/dev/null 2>&1; then
+        command -v python3
+        return 0
+    fi
+    if command -v python >/dev/null 2>&1; then
+        command -v python
+        return 0
+    fi
+    return 1
+}
+
+show_message() {
+    MESSAGE=$1
+    if command -v osascript >/dev/null 2>&1; then
+        osascript -e "display dialog \"$MESSAGE\" buttons {\"知道了\"} default button \"知道了\"" >/dev/null 2>&1 || true
+    fi
+}
+
+if ! PYTHON_BIN=$(pick_python); then
+    show_message "需要先安装 Python 3.10 或更新版本，然后再打开小和工作台。"
+    exit 1
+fi
+
+if ! "$PYTHON_BIN" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)'; then
+    show_message "当前 Python 版本太旧。请安装 Python 3.10 或更新版本。"
+    exit 1
+fi
+
+cd "$APP_ROOT"
+exec "$PYTHON_BIN" gui_admin_app.py
